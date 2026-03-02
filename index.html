@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>総合英文法クイズ</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    text-align:center;
+    background:#F8F7FF;
+    margin:0;
+}
+
+h1{
+    background:#E4DCFF;
+    padding:15px;
+    margin:0;
+}
+
+.screen{ margin-top:30px; }
+
+button{
+    padding:10px 20px;
+    margin:10px;
+    border:none;
+    border-radius:15px;
+    background:#FFDFF2;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover{ background:#FFC8E8; }
+
+.choice{
+    display:block;
+    width:75%;
+    margin:8px auto;
+    background:#D9FFE2;
+}
+
+#timer{
+    font-size:18px;
+    color:#FF6B9A;
+    margin:10px;
+}
+
+#instruction{
+    font-weight:bold;
+    margin-top:15px;
+}
+
+#questionTop{
+    font-size:18px;
+    margin-top:15px;
+}
+
+#questionBottom{
+    font-size:18px;
+    margin-bottom:15px;
+}
+
+.correct{ color:#3CB371; }
+.wrong{ color:#FF4D6D; }
+
+.reviewItem{
+    margin:10px;
+    font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>総合英文法クイズ</h1>
+
+<div id="sectionScreen" class="screen">
+    <h2>セクションを選んでください</h2>
+    <button onclick="startQuiz(1)">セクション1（仮定法など）</button>
+    <button onclick="startQuiz(2)">セクション2（関係詞）</button>
+</div>
+
+<div id="quizScreen" class="screen" style="display:none;">
+    <div id="timer">残り10秒</div>
+    <div id="instruction">それぞれの空所に当てはまる語句を選べ。</div>
+    <div id="questionTop"></div>
+    <div id="questionBottom"></div>
+    <div id="choices"></div>
+    <div id="feedback"></div>
+</div>
+
+<div id="resultScreen" class="screen" style="display:none;">
+    <h2>結果</h2>
+    <p id="score"></p>
+    <h3>復習</h3>
+    <div id="review"></div>
+    <button onclick="location.reload()">もう一度</button>
+</div>
+
+<script>
+
+let questions1=[
+{
+top:"If she (      ) there yesterday,",
+bottom:"she would not be here now.",
+choices:["did not leave","had not left","has not left","would not leave"],
+answer:"had not left"
+},
+{
+top:"(     ) you need any more information,",
+bottom:"please call the information.",
+choices:["Do","Had","Should","Would"],
+answer:"Should"
+},
+{
+top:"I do not deny that your information was invaluable.",
+bottom:"(     ) it, I could never have formed our plan.",
+choices:["Far from","In spite of","With","Without"],
+answer:"Without"
+},
+{
+top:"Hirokaka was very tired last night.",
+bottom:"Otherwise, he (      ) to see the movie.",
+choices:["will go","have gone","will have gone","would have gone"],
+answer:"would have gone"
+},
+{
+top:"Keisuke : I didn't know that she was so troubled about money matters.",
+bottom:"Hirokaka : I wish you (     ) her some a couple of weeks earlier.",
+choices:["had sent","send","sent","will send"],
+answer:"had sent"
+},
+{
+top:"(     ) for the doctor's great skill in the operation,",
+bottom:"he would not be alive now.",
+choices:["Without","Unless","But","Not"],
+answer:"But"
+},
+{
+top:"(     ) birds,",
+bottom:"the world would be filled with insects.",
+choices:["Were it not for","If it had not been for","wouldn't been","wouldn't have been"],
+answer:"Were it not for"
+}
+];
+
+let questions2=[
+{
+top:"My sister told me about a class at her university,",
+bottom:"(     ) very much.",
+choices:["she's enjoying that","she's to enjoy it","that she's to enjoy","which she's enjoying"],
+answer:"which she's enjoying"
+},
+{
+top:"Last summer, I paid a visit to Kingstown,",
+bottom:"(      ) is the capital of Saint Vincent and the Grenadines.",
+choices:["it","that","where","which"],
+answer:"which"
+},
+{
+top:"New Zealand is one of the countries",
+bottom:"(     ) I would like to visit.",
+choices:["where","wherever","which","whichever"],
+answer:"which"
+},
+{
+top:"Ludwig van Beethoven is a famous musician,",
+bottom:"and (     ) is more, she is an excellent designer.",
+choices:["who","what","where","how"],
+answer:"what"
+},
+{
+top:"(      ) Hirokaka,",
+bottom:"he forgot to do his homework.",
+choices:["As is often the case with","As often with the case is","As the case is often with","As is the case often with"],
+answer:"As is often the case with"
+}
+];
+
+let current=0;
+let score=0;
+let wrongList=[];
+let quiz=[];
+let timer;
+let timeLeft=10;
+
+function startQuiz(section){
+document.getElementById("sectionScreen").style.display="none";
+document.getElementById("quizScreen").style.display="block";
+
+quiz = (section===1)?questions1:questions2;
+current=0;
+score=0;
+wrongList=[];
+showQuestion();
+}
+
+function showQuestion(){
+
+if(current>=quiz.length){
+endQuiz();
+return;
+}
+
+timeLeft=10;
+document.getElementById("feedback").innerHTML="";
+document.getElementById("timer").textContent="残り10秒";
+
+let q=quiz[current];
+
+document.getElementById("questionTop").innerHTML=q.top;
+document.getElementById("questionBottom").innerHTML=q.bottom;
+
+let div=document.getElementById("choices");
+div.innerHTML="";
+
+q.choices.forEach(choice=>{
+let btn=document.createElement("button");
+btn.textContent=choice;
+btn.className="choice";
+btn.onclick=()=>selectAnswer(choice,q.answer);
+div.appendChild(btn);
+});
+
+timer=setInterval(()=>{
+timeLeft--;
+document.getElementById("timer").textContent="残り"+timeLeft+"秒";
+if(timeLeft===0){
+clearInterval(timer);
+showFeedback(false,q.answer);
+}
+},1000);
+}
+
+function selectAnswer(answer,correct){
+clearInterval(timer);
+let isCorrect = answer===correct;
+showFeedback(isCorrect,correct);
+}
+
+function showFeedback(isCorrect,correct){
+
+let fb=document.getElementById("feedback");
+
+if(isCorrect){
+score++;
+fb.innerHTML="<span class='correct'>正解！</span>";
+}else{
+fb.innerHTML="<span class='wrong'>正解は： "+correct+"</span>";
+wrongList.push({
+question:quiz[current].top+" "+quiz[current].bottom,
+answer:correct
+});
+}
+
+setTimeout(()=>{
+current++;
+showQuestion();
+},1500);
+}
+
+function endQuiz(){
+document.getElementById("quizScreen").style.display="none";
+document.getElementById("resultScreen").style.display="block";
+
+document.getElementById("score").textContent=
+score+" / "+quiz.length+" 問正解！";
+
+let review=document.getElementById("review");
+review.innerHTML="";
+
+if(wrongList.length===0){
+review.innerHTML="全問正解！素晴らしい！✨";
+}else{
+wrongList.forEach(item=>{
+review.innerHTML+=
+"<div class='reviewItem'>"+
+item.question+"<br>→ "+item.answer+
+"</div>";
+});
+}
+}
+
+</script>
+</body>
+</html>
